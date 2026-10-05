@@ -1,0 +1,15 @@
+version: 0.1
+component: build
+timeoutInSeconds: 1800
+shell: bash
+failImmediatelyOnError: true
+steps:
+  - type: Command
+    name: Build OCI Function image
+    command: |
+      cd "${OCI_PRIMARY_SOURCE_DIR}"
+      podman build -t function:latest .
+outputArtifacts:
+  - name: function-image
+    type: DOCKER_IMAGE
+    location: function:latest

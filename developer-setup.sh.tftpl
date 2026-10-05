@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Generated for ${application_name}. Keep your OCIR auth token out of this file.
+export FN_REGION='${region}'
+export FN_REGION_KEY='${region_key}'
+export FN_REALM_DOMAIN='${realm_domain}'
+export FN_TENANCY_NAME='${tenancy_name}'
+export TENANCY_NS='${namespace}'
+export FN_COMP_ID='${compartment_id}'
+export FN_COMP_NAME='${compartment_name}'
+export FN_OCIR='${repository_name}'
+export FN_IMAGE_NAME='${function_name}'
+export FN_APP_ID='${application_id}'
+export FN_FN_ID='${function_id}'
+export OCI_DOMAIN_NAME='${identity_domain}'
+export FN_USER_NAME='${user_name}'
+export FN_SDK_PROFILE='${oci_profile}'
+export FN_OCIR_HOST="ocir.$FN_REGION.oci.$FN_REALM_DOMAIN"
+export FN_OCIR_PATH="$TENANCY_NS/$FN_OCIR/$FN_IMAGE_NAME"
+export FN_CONTEXT="$(printf '%s' "$FN_TENANCY_NAME-$FN_REGION_KEY-$FN_IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
+export FN_REPOSITORY_URL='${repository_url}'
+
+setup() {
+  : "$${FN_TOKEN:?Set FN_TOKEN to an OCI auth token before setup}"
+  printf '%s' "$FN_TOKEN" | docker login "$FN_OCIR_HOST" \
+    -u "$TENANCY_NS/$OCI_DOMAIN_NAME/$FN_USER_NAME" --password-stdin
+  fn create context "$FN_CONTEXT" --provider oracle 2>/dev/null || true
+  fn use context "$FN_CONTEXT"
+  fn update context oracle.compartment-id "$FN_COMP_ID"
+  fn update context api-url "https://functions.$FN_REGION.oci.$FN_REALM_DOMAIN"
+  fn update context registry "$FN_OCIR_HOST/$TENANCY_NS/$FN_OCIR"
+  fn update context oracle.profile "$FN_SDK_PROFILE"
+}
+
+local_build() {
+  fn use context "$FN_CONTEXT"
+  fn bump
+  fn build
+  fn push
+  image="$FN_OCIR_HOST/$FN_OCIR_PATH"
+  version="$(awk '/^version:/ {print $2}' func.yaml)"
+  docker tag "$image:$version" "$image:latest"
+  docker push "$image:latest"
+  if [[ -n "$FN_FN_ID" ]]; then
+    oci fn function update --function-id "$FN_FN_ID" --image "$image:latest" \
+      --profile "$FN_SDK_PROFILE"
+  fi
+}
+
+case "$${1:-}" in
+  setup) setup ;;
+  push) git push origin main ;;
+  local-build) local_build ;;
+  *) printf 'Usage: %s {setup|push|local-build}\n' "$0" >&2; exit 2 ;;
+esac
