@@ -40,11 +40,13 @@ resource "archive_file" "developer_setup" {
   }
 }
 
+// The OCI provider checks a known source path during planning. Wait until the
+// archive exists before giving it the upload path.
 resource "oci_objectstorage_object" "setup" {
   bucket              = local.bucket
   namespace           = local.namespace
   object              = local.object_name
-  source              = archive_file.developer_setup.output_path
+  source              = archive_file.developer_setup.output_sha256 != "" ? archive_file.developer_setup.output_path : null
   content_type        = "application/zip"
   content_disposition = "attachment; filename=\"${local.object_name}\""
   metadata = {
