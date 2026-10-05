@@ -3,7 +3,6 @@ locale: en
 variableGroups:
   - title: Destination
     variables:
-      - tenancy_ocid
       - region
       - compartment_ocid
       - name_prefix
@@ -45,8 +44,8 @@ variables:
   tenancy_ocid:
     type: string
     required: true
+    visible: false
     title: Tenancy OCID
-    description: Find this in the OCI Console under Profile, Tenancy, Tenancy Information.
   region:
     type: oci:identity:region:name
     required: true
