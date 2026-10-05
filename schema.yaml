@@ -1,3 +1,4 @@
+schemaVersion: "1.1.0"
 locale: en
 variableGroups:
   - title: Destination
@@ -6,28 +7,40 @@ variableGroups:
       - region
       - compartment_ocid
       - name_prefix
-  - title: Function network
+  - title: Function network choice
     variables:
       - network_choice
+  - title: Select an existing function network
+    visible: ${network_choice}
+    variables:
       - existing_vcn_ocid
       - existing_subnet_ocid
+  - title: Define a new function network
+    visible:
+      not:
+        - ${network_choice}
+    variables:
       - vcn_cidr
       - subnet_cidr
-  - title: Developer script bucket
+  - title: Developer script bucket choice
     variables:
       - bucket_choice
+      - par_expiration_days
+  - title: Select an existing developer script bucket
+    visible: ${bucket_choice}
+    variables:
       - existing_bucket_name
+  - title: Define a new developer script bucket
+    visible:
+      not:
+        - ${bucket_choice}
+    variables:
       - bucket_name
-      - par_expiration
   - title: Function and developer settings
     variables:
       - function_name
       - function_memory_mb
       - enable_function_deployment
-      - tenancy_name
-      - region_key
-      - developer_identity_domain
-      - developer_user_name
       - developer_oci_profile
 variables:
   tenancy_ocid:
@@ -49,20 +62,17 @@ variables:
     title: Name prefix
     description: Use 3 to 21 lowercase letters, numbers, or hyphens; start with a letter.
   network_choice:
-    type: enum
+    type: boolean
     required: true
-    title: Function network
-    enum: [Select, Define]
-    default: Define
+    title: Select an existing function network
+    description: Check to select an existing VCN and private regional subnet. Leave unchecked to define a new network.
+    default: false
   existing_vcn_ocid:
     type: oci:core:vcn:id
     title: Existing VCN
     dependsOn:
       compartmentId: ${compartment_ocid}
-    visible:
-      eq:
-        - ${network_choice}
-        - Select
+    visible: ${network_choice}
   existing_subnet_ocid:
     type: oci:core:subnet:id
     title: Existing private regional subnet
@@ -71,53 +81,46 @@ variables:
       vcnId: ${existing_vcn_ocid}
       hidePublicSubnet: true
       hideAdSubnet: true
-    visible:
-      eq:
-        - ${network_choice}
-        - Select
+    visible: ${network_choice}
   vcn_cidr:
     type: string
     title: New VCN CIDR
     default: 10.42.0.0/16
     visible:
-      eq:
+      not:
         - ${network_choice}
-        - Define
   subnet_cidr:
     type: string
     title: New private subnet CIDR
     default: 10.42.1.0/24
     visible:
-      eq:
+      not:
         - ${network_choice}
-        - Define
   bucket_choice:
-    type: enum
+    type: boolean
     required: true
-    title: Developer script bucket
-    enum: [Select, Define]
-    default: Define
+    title: Select an existing developer script bucket
+    description: Check to enter an existing bucket name. Leave unchecked to define a new bucket.
+    default: false
   existing_bucket_name:
     type: string
     title: Existing bucket name
-    description: In OCI Console, open Storage, Buckets in the target compartment and copy the bucket name. Resource Manager has no native bucket-name selector.
-    visible:
-      eq:
-        - ${bucket_choice}
-        - Select
+    description: In OCI Console, open Storage, Buckets in the target compartment and copy the bucket name.
+    visible: ${bucket_choice}
   bucket_name:
     type: string
     title: New bucket name
     description: Leave blank to use a name based on the stack prefix.
     visible:
-      eq:
+      not:
         - ${bucket_choice}
-        - Define
-  par_expiration:
-    type: string
+  par_expiration_days:
+    type: integer
     required: true
-    title: Script link expiry
-    description: Enter a future UTC RFC3339 timestamp, for example 2027-12-31T23:59:59Z.
+    title: Script link lifetime (days)
+    description: Number of days the developer setup ZIP download link remains valid after apply.
+    default: 30
+    minimum: 1
   function_name:
     type: string
     default: function
@@ -130,23 +133,6 @@ variables:
     type: boolean
     default: false
     title: Enable Function and deployment stage after first image build
-  tenancy_name:
-    type: string
-    required: true
-    title: Tenancy name
-  region_key:
-    type: string
-    required: true
-    title: Region key
-    description: Copy the short region key from OCI Regions documentation or your Console region details.
-  developer_identity_domain:
-    type: string
-    required: true
-    title: Developer identity domain name
-  developer_user_name:
-    type: string
-    required: true
-    title: Developer user name
   developer_oci_profile:
     type: string
     default: DEFAULT

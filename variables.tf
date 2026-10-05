@@ -11,12 +11,8 @@ variable "name_prefix" {
   }
 }
 variable "network_choice" {
-  type    = string
-  default = "Define"
-  validation {
-    condition     = contains(["Select", "Define"], var.network_choice)
-    error_message = "Choose Select or Define."
-  }
+  type    = bool
+  default = false
 }
 variable "existing_subnet_ocid" {
   type    = string
@@ -36,12 +32,8 @@ variable "subnet_cidr" {
   default = "10.42.1.0/24"
 }
 variable "bucket_choice" {
-  type    = string
-  default = "Define"
-  validation {
-    condition     = contains(["Select", "Define"], var.bucket_choice)
-    error_message = "Choose Select or Define."
-  }
+  type    = bool
+  default = false
 }
 variable "existing_bucket_name" {
   type    = string
@@ -51,9 +43,14 @@ variable "bucket_name" {
   type    = string
   default = ""
 }
-variable "par_expiration" {
-  type        = string
-  description = "RFC3339 timestamp for the developer script pre-authenticated request expiry."
+variable "par_expiration_days" {
+  type        = number
+  default     = 30
+  description = "Number of days the developer script pre-authenticated request remains valid after apply."
+  validation {
+    condition     = var.par_expiration_days >= 1 && floor(var.par_expiration_days) == var.par_expiration_days
+    error_message = "Script link lifetime must be a whole number of days greater than zero."
+  }
 }
 variable "function_name" {
   type    = string
@@ -72,17 +69,7 @@ variable "enable_function_deployment" {
   default     = false
   description = "Set true only after the first image has been delivered to OCIR."
 }
-variable "developer_identity_domain" {
-  type        = string
-  description = "Identity domain name used in the developer's OCIR login."
-}
-variable "developer_user_name" {
-  type        = string
-  description = "OCI user name used in the developer's OCIR login."
-}
 variable "developer_oci_profile" {
   type    = string
   default = "DEFAULT"
 }
-variable "tenancy_name" { type = string }
-variable "region_key" { type = string }

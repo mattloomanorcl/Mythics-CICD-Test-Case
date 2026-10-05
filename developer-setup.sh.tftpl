@@ -13,8 +13,6 @@ export FN_OCIR='${repository_name}'
 export FN_IMAGE_NAME='${function_name}'
 export FN_APP_ID='${application_id}'
 export FN_FN_ID='${function_id}'
-export OCI_DOMAIN_NAME='${identity_domain}'
-export FN_USER_NAME='${user_name}'
 export FN_SDK_PROFILE='${oci_profile}'
 export FN_OCIR_HOST="ocir.$FN_REGION.oci.$FN_REALM_DOMAIN"
 export FN_OCIR_PATH="$TENANCY_NS/$FN_OCIR/$FN_IMAGE_NAME"
@@ -22,9 +20,17 @@ export FN_CONTEXT="$(printf '%s' "$FN_TENANCY_NAME-$FN_REGION_KEY-$FN_IMAGE_NAME
 export FN_REPOSITORY_URL='${repository_url}'
 
 setup() {
-  : "$${FN_TOKEN:?Set FN_TOKEN to an OCI auth token before setup}"
-  printf '%s' "$FN_TOKEN" | docker login "$FN_OCIR_HOST" \
-    -u "$TENANCY_NS/$OCI_DOMAIN_NAME/$FN_USER_NAME" --password-stdin
+  if [[ $# -ne 2 || -z "$1" || -z "$2" ]]; then
+    printf 'Usage: %s setup <ocir-login-username> <auth-token|->\n' "$0" >&2
+    exit 2
+  fi
+  local login_user="$1" auth_token="$2"
+  if [[ "$auth_token" == '-' ]]; then
+    read -r -s -p 'OCI auth token: ' auth_token
+    printf '\n'
+  fi
+  printf '%s' "$auth_token" | docker login "$FN_OCIR_HOST" \
+    --username "$login_user" --password-stdin
   fn create context "$FN_CONTEXT" --provider oracle 2>/dev/null || true
   fn use context "$FN_CONTEXT"
   fn update context oracle.compartment-id "$FN_COMP_ID"
@@ -49,8 +55,8 @@ local_build() {
 }
 
 case "$${1:-}" in
-  setup) setup ;;
+  setup) shift; setup "$@" ;;
   push) git push origin main ;;
   local-build) local_build ;;
-  *) printf 'Usage: %s {setup|push|local-build}\n' "$0" >&2; exit 2 ;;
+  *) printf 'Usage: %s {setup <ocir-login-username> <auth-token|->|push|local-build}\n' "$0" >&2; exit 2 ;;
 esac

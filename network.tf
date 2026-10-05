@@ -5,7 +5,7 @@ locals {
 }
 
 resource "oci_core_vcn" "function" {
-  count          = var.network_choice == "Define" ? 1 : 0
+  count          = var.network_choice ? 0 : 1
   compartment_id = var.compartment_ocid
   cidr_block     = var.vcn_cidr
   display_name   = "${var.name_prefix}-vcn"
@@ -13,7 +13,7 @@ resource "oci_core_vcn" "function" {
 }
 
 resource "oci_core_service_gateway" "function" {
-  count          = var.network_choice == "Define" ? 1 : 0
+  count          = var.network_choice ? 0 : 1
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.function[0].id
   display_name   = "${var.name_prefix}-service-gateway"
@@ -23,7 +23,7 @@ resource "oci_core_service_gateway" "function" {
 }
 
 resource "oci_core_route_table" "function" {
-  count          = var.network_choice == "Define" ? 1 : 0
+  count          = var.network_choice ? 0 : 1
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.function[0].id
   display_name   = "${var.name_prefix}-private-routes"
@@ -35,7 +35,7 @@ resource "oci_core_route_table" "function" {
 }
 
 resource "oci_core_security_list" "function" {
-  count          = var.network_choice == "Define" ? 1 : 0
+  count          = var.network_choice ? 0 : 1
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.function[0].id
   display_name   = "${var.name_prefix}-function-egress"
@@ -46,7 +46,7 @@ resource "oci_core_security_list" "function" {
 }
 
 resource "oci_core_subnet" "function" {
-  count                      = var.network_choice == "Define" ? 1 : 0
+  count                      = var.network_choice ? 0 : 1
   compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.function[0].id
   cidr_block                 = var.subnet_cidr
@@ -58,5 +58,5 @@ resource "oci_core_subnet" "function" {
 }
 
 locals {
-  subnet_id = var.network_choice == "Select" ? var.existing_subnet_ocid : oci_core_subnet.function[0].id
+  subnet_id = var.network_choice ? var.existing_subnet_ocid : oci_core_subnet.function[0].id
 }

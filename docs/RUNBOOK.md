@@ -3,9 +3,9 @@
 ## 1. Prepare the stack
 
 1. Review [PREREQUISITES.md](PREREQUISITES.md) and arrange the listed IAM policies before creating the stack.
-2. Package the root Terraform files, `schema.yaml`, and `developer-setup.sh.tftpl` as the Resource Manager configuration. Keep `build_spec.yaml` for the hosted source repository too. Do not include `.terraform` or state files.
-3. Create a Resource Manager stack from the package. Enter the destination, Select or Define choices, PAR expiry, developer identity details, and function settings in the schema form. Leave **Enable Function and deployment stage** off.
-4. Run a plan, review the resource names and IAM policy statements, then run the first apply. Record the `repository_url`, `build_pipeline_id`, `deploy_pipeline_id`, `container_image`, and sensitive `developer_script_url` outputs. The deployment pipeline exists now but has no stage yet.
+2. Package the root Terraform files, `schema.yaml`, `README.md`, and `developer-setup.sh.tftpl` as the Resource Manager configuration. Keep `build_spec.yaml` for the hosted source repository too. Do not include `.terraform` or state files.
+3. Create a Resource Manager stack from the package. For the network and bucket, check **Select an existing** to reveal existing-resource inputs or leave the checkbox unchecked to define new resources. Enter the destination, setup ZIP link lifetime in days (30 by default), developer OCI CLI profile, and function settings in the schema form. Terraform looks up the tenancy name and region key. Leave **Enable Function and deployment stage** off.
+4. Run a plan, review the resource names and IAM policy statements, then run the first apply. Record the `repository_url`, `build_pipeline_id`, `deploy_pipeline_id`, `container_image`, and sensitive `developer_setup_zip_url` outputs. The deployment pipeline exists now but has no stage yet.
 
 For local Terraform, use `terraform init`, set the same variables with a local `.tfvars` file or environment variables, run `terraform plan -out=stack.tfplan`, and apply the reviewed plan with `terraform apply stack.tfplan`. Do not commit `.tfvars`, plan, or state files if they contain environment details.
 
@@ -23,10 +23,10 @@ For local Terraform, use `terraform init`, set the same variables with a local `
 
 ## 4. Developer setup and everyday use
 
-1. Retrieve the sensitive `developer_script_url` from Resource Manager outputs and download the object as `developer-setup.sh`. Treat the PAR URL as a credential until it expires.
-2. Set `FN_TOKEN` in the developer's shell to an OCI auth token. Run `bash developer-setup.sh setup`. The script logs in to OCIR and creates or selects the Fn context using IDs produced by this stack.
-3. Work in the hosted repository and run `bash developer-setup.sh push` from its root to push `main`. This starts the CI/CD pipeline. `bash developer-setup.sh local-build` is available for the DEV_SETUP.md local Fn build/push workflow; after the second apply it also updates the Function image directly, so prefer `push` for the normal controlled pipeline.
-4. If the PAR expires, choose a new expiry in the stack and apply to create a replacement request. Redistribute the new sensitive URL.
+1. Retrieve the sensitive `developer_setup_zip_url` from Resource Manager outputs and use it to download the ZIP. Treat the PAR URL as a credential until it expires.
+2. Extract the ZIP and follow its `README.md`. Each developer supplies their own full OCIR login username and auth token to `developer-setup.sh setup`; neither credential is embedded in the ZIP.
+3. Work in the hosted repository and run `bash /path/to/developer-setup.sh push` from its root to push `main`. This starts the CI/CD pipeline. `bash /path/to/developer-setup.sh local-build` is available for the DEV_SETUP.md local Fn build/push workflow; after the second apply it also updates the Function image directly, so prefer `push` for the normal controlled pipeline.
+4. Each apply calculates the PAR expiry from its apply time plus `par_expiration_days`; a subsequent apply may replace the PAR and change its sensitive URL. Redistribute the current URL after applying, especially when renewing an expired link.
 
 ## Operations and recovery
 

@@ -10,7 +10,7 @@ Any prerequisite required resources will use Select or Define options in the sch
 
 ## Dev Setup Scripts
 
-The terraform stack will build developer scripts to inititialize and support local development environments on developers' machines. The script will be stored in an Object Storage bucket, either selected or defined by the stack user. The stack will implement a pre-authenticated request for the script objects so that this can be given to users to download the scripts.
+The terraform stack will build developer scripts to inititialize and support local development environments on developers' machines. The setup script and a developer README will be packaged into a ZIP stored in an Object Storage bucket, either selected or defined by the stack user. The stack will implement a pre-authenticated request for the ZIP so that users can download it.
 
 The dev setup scripts will use the [DEV_SETUP.md](.\DEV_SETUP.md) as the basis for defining the scripts. Environment variables identified in the DEV_SETUP.md file will be explicitly set in the script using values derived from the results of the terraform apply function and the OCI environment in which the code is to be deployed. Scripts should avoid using any code basis, or language not explicitly indicated in the DEV_SETUP.md file (i.e., don't use complicated python when explicitly setting permanent environment variables and running simple commands will accomplish the task).
 

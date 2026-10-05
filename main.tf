@@ -2,15 +2,22 @@ data "oci_objectstorage_namespace" "tenancy" {
   compartment_id = var.tenancy_ocid
 }
 
+data "oci_identity_tenancy" "current" {
+  tenancy_id = var.tenancy_ocid
+}
+
+data "oci_identity_regions" "all" {}
+
 locals {
   # The hosted repository URL is returned by OCI in the same realm as the
   # stack, for example devops.scmservice.<region>.oci.oraclecloud.com.
   repository_host = split("/", oci_devops_repository.function.http_url)[2]
   realm_domain    = split(".oci.", local.repository_host)[1]
   namespace       = data.oci_objectstorage_namespace.tenancy.namespace
+  region_key      = one([for region in data.oci_identity_regions.all.regions : region.key if region.name == var.region])
   registry        = "ocir.${var.region}.oci.${local.realm_domain}/${local.namespace}/${var.name_prefix}/${var.function_name}"
-  bucket          = var.bucket_choice == "Select" ? var.existing_bucket_name : oci_objectstorage_bucket.scripts[0].name
-  object_name     = "${var.name_prefix}-dev-setup.sh"
+  bucket          = var.bucket_choice ? var.existing_bucket_name : oci_objectstorage_bucket.scripts[0].name
+  object_name     = "${var.name_prefix}-developer-setup.zip"
 }
 
 resource "oci_functions_application" "function" {
@@ -19,8 +26,8 @@ resource "oci_functions_application" "function" {
   subnet_ids     = [local.subnet_id]
   lifecycle {
     precondition {
-      condition     = var.network_choice == "Define" || var.existing_subnet_ocid != ""
-      error_message = "Select an existing subnet OCID when network_choice is Select."
+      condition     = !var.network_choice || var.existing_subnet_ocid != ""
+      error_message = "Select an existing subnet OCID when the existing function network checkbox is checked."
     }
   }
 }

@@ -13,7 +13,8 @@ FN_COMP_ID="$(oci iam compartment list --compartment-id-in-subtree true --all --
 Login to the OCI Registry service
 
 ``` bash
-docker login "${FN_OCIR_HOST}" -u "${TENANCY_NS}/${OCI_DOMAIN_NAME}/${FN_USER_NAME}" -p $FN_TOKEN
+printf '%s' "$OCIR_AUTH_TOKEN" | docker login "${FN_OCIR_HOST}" \
+  --username "$OCIR_LOGIN_USERNAME" --password-stdin
 ```
 
 # Initial function setup

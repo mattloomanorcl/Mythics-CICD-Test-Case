@@ -3,7 +3,7 @@
 ## OCI and Resource Manager
 
 * An OCI tenancy, target compartment, and region with Functions, DevOps, Object Storage, Notifications, and Container Registry available, plus sufficient service limits and quota.
-* The Resource Manager stack or Terraform principal must already be able to manage the target compartment's VCNs, subnets, service gateways, Functions applications and functions, DevOps projects, repositories, pipelines, stages, triggers, deploy artifacts and environments, OCIR repositories, Object Storage buckets, objects and PARs, and Notifications topics. It also needs to read tenancy namespace and compartment details.
+* The Resource Manager stack or Terraform principal must already be able to manage the target compartment's VCNs, subnets, service gateways, Functions applications and functions, DevOps projects, repositories, pipelines, stages, triggers, deploy artifacts and environments, OCIR repositories, Object Storage buckets, objects and PARs, and Notifications topics. It also needs to read the tenancy name, region list, tenancy namespace, and compartment details.
 * A tenancy administrator must grant the apply principal permission to create dynamic groups in the tenancy and IAM policies in the target compartment. These permissions cannot be supplied by the same stack before its first apply. Example policies for the principal's group, adjusted to your tenancy's group and compartment names, are:
 
   ```text
@@ -20,12 +20,12 @@
 
   A tenancy administrator may need to create or adjust these policies at a parent compartment if the Resource Manager principal cannot see the target compartment. Verify your tenancy's group syntax, identity domain, and policy placement with your IAM administrator.
 * Use a unique lowercase `name_prefix` for each environment. Names of dynamic groups are tenancy-wide; bucket and OCIR names must also avoid collisions.
-* Supply a future UTC RFC3339 `par_expiration`, such as `2027-12-31T23:59:59Z`. Set `enable_function_deployment=false` for the first apply.
+* Set `par_expiration_days` to the desired developer setup ZIP link lifetime (30 days by default). Set `enable_function_deployment=false` for the first apply.
 
 ## Select options
 
-* If `network_choice=Select`, choose an existing private regional subnet in the target compartment. Its route table must allow access to OCI services, including OCIR and Functions, through a service gateway; any other destinations needed by the Function need suitable routes and security rules. The schema's VCN choice narrows the native subnet selector.
-* If `bucket_choice=Select`, enter an existing bucket name in the target compartment and tenancy namespace. Resource Manager has no native bucket-name selector in this schema, so obtain the name from **Storage → Buckets** in the OCI Console. The apply principal must be allowed to write the setup object and create a PAR on the bucket.
+* If the existing function network checkbox is checked (`network_choice=true`), choose an existing private regional subnet in the target compartment. Its route table must allow access to OCI services, including OCIR and Functions, through a service gateway; any other destinations needed by the Function need suitable routes and security rules. The schema's VCN choice narrows the native subnet selector. Leave the checkbox unchecked (`false`) to define a new VCN and subnet.
+* If the existing developer script bucket checkbox is checked (`bucket_choice=true`), enter an existing bucket name in the target compartment and tenancy namespace. Resource Manager has no native bucket-name selector in this schema, so obtain the name from **Storage → Buckets** in the OCI Console. The apply principal must be allowed to write the setup object and create a PAR on the bucket. Leave the checkbox unchecked (`false`) to define a new bucket.
 
 ## Developer and source repository
 

@@ -8,7 +8,7 @@ output "container_image" { value = "${local.registry}:latest" }
 output "function_dynamic_group_name" {
   value = var.enable_function_deployment ? oci_identity_dynamic_group.function[0].name : null
 }
-output "developer_script_url" {
+output "developer_setup_zip_url" {
   value     = "https://objectstorage.${var.region}.${local.realm_domain}${oci_objectstorage_preauthrequest.setup.access_uri}"
   sensitive = true
 }
