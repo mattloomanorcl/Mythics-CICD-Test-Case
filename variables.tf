@@ -69,7 +69,3 @@ variable "enable_function_deployment" {
   default     = false
   description = "Set true only after the first image has been delivered to OCIR."
 }
-variable "developer_oci_profile" {
-  type    = string
-  default = "DEFAULT"
-}

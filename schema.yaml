@@ -41,7 +41,6 @@ variableGroups:
       - function_name
       - function_memory_mb
       - enable_function_deployment
-      - developer_oci_profile
 variables:
   tenancy_ocid:
     type: string
@@ -133,7 +132,3 @@ variables:
     type: boolean
     default: false
     title: Enable Function and deployment stage after first image build
-  developer_oci_profile:
-    type: string
-    default: DEFAULT
-    title: Developer OCI CLI profile

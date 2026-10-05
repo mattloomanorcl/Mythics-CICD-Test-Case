@@ -29,7 +29,7 @@
 
 ## Developer and source repository
 
-* The developer needs Git, Docker, Fn CLI, OCI CLI configured for the selected profile, and a valid OCI auth token for OCIR. The developer's IAM access must permit reading and pushing the hosted DevOps repository, pushing to the private OCIR repository for optional local builds, and updating the Function if using `local-build` after bootstrap.
+* The developer needs Git, Docker, Fn CLI, an OCI CLI profile configured on their own machine, and a valid OCI auth token for OCIR. The developer's IAM access must permit reading and pushing the hosted DevOps repository, pushing to the private OCIR repository for optional local builds, and updating the Function if using `local-build` after bootstrap.
 * The source pushed to `main` must include `build_spec.yaml` and a Dockerfile that builds a valid OCI Functions image. Include application code and any runtime dependencies. For the optional local Fn workflow, also include `func.yaml` with a function name matching `function_name` and a version. The managed build uses `podman build` from the repository root. The repository is empty immediately after Terraform creates it.
 * The generated script uses Bash. On Windows, run it in a compatible Bash environment with Docker, Fn, OCI CLI, and Git available there.
 

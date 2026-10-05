@@ -28,7 +28,7 @@ fn update context oracle.compartment-id $FN_COMP_ID
 fn update context api-url "https://functions.${FN_REGION}.oci.oracle${FN_ISGOV}cloud.com"
  
 fn update context registry "${FN_OCIR_HOST}/${TENANCY_NS}/${FN_OCIR}"
-fn update context oracle.profile $FN_SDK_PROFILE
+fn update context oracle.profile "<your-local-oci-cli-profile>"
 ```
 
 # Build

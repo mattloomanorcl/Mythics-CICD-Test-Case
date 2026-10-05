@@ -13,18 +13,17 @@ export FN_OCIR='${repository_name}'
 export FN_IMAGE_NAME='${function_name}'
 export FN_APP_ID='${application_id}'
 export FN_FN_ID='${function_id}'
-export FN_SDK_PROFILE='${oci_profile}'
 export FN_OCIR_HOST="ocir.$FN_REGION.oci.$FN_REALM_DOMAIN"
 export FN_OCIR_PATH="$TENANCY_NS/$FN_OCIR/$FN_IMAGE_NAME"
 export FN_CONTEXT="$(printf '%s' "$FN_TENANCY_NAME-$FN_REGION_KEY-$FN_IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
 export FN_REPOSITORY_URL='${repository_url}'
 
 setup() {
-  if [[ $# -ne 2 || -z "$1" || -z "$2" ]]; then
-    printf 'Usage: %s setup <ocir-login-username> <auth-token|->\n' "$0" >&2
+  if [[ $# -ne 3 || -z "$1" || -z "$2" || -z "$3" ]]; then
+    printf 'Usage: %s setup <ocir-login-username> <oci-cli-profile> <auth-token|->\n' "$0" >&2
     exit 2
   fi
-  local login_user="$1" auth_token="$2"
+  local login_user="$1" oci_profile="$2" auth_token="$3"
   if [[ "$auth_token" == '-' ]]; then
     read -r -s -p 'OCI auth token: ' auth_token
     printf '\n'
@@ -36,10 +35,15 @@ setup() {
   fn update context oracle.compartment-id "$FN_COMP_ID"
   fn update context api-url "https://functions.$FN_REGION.oci.$FN_REALM_DOMAIN"
   fn update context registry "$FN_OCIR_HOST/$TENANCY_NS/$FN_OCIR"
-  fn update context oracle.profile "$FN_SDK_PROFILE"
+  fn update context oracle.profile "$oci_profile"
 }
 
 local_build() {
+  if [[ $# -ne 1 || -z "$1" ]]; then
+    printf 'Usage: %s local-build <oci-cli-profile>\n' "$0" >&2
+    exit 2
+  fi
+  local oci_profile="$1"
   fn use context "$FN_CONTEXT"
   fn bump
   fn build
@@ -50,13 +54,13 @@ local_build() {
   docker push "$image:latest"
   if [[ -n "$FN_FN_ID" ]]; then
     oci fn function update --function-id "$FN_FN_ID" --image "$image:latest" \
-      --profile "$FN_SDK_PROFILE"
+      --profile "$oci_profile"
   fi
 }
 
 case "$${1:-}" in
   setup) shift; setup "$@" ;;
   push) git push origin main ;;
-  local-build) local_build ;;
-  *) printf 'Usage: %s {setup <ocir-login-username> <auth-token|->|push|local-build}\n' "$0" >&2; exit 2 ;;
+  local-build) shift; local_build "$@" ;;
+  *) printf 'Usage: %s {setup <ocir-login-username> <oci-cli-profile> <auth-token|->|push|local-build <oci-cli-profile>}\n' "$0" >&2; exit 2 ;;
 esac

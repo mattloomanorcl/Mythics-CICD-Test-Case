@@ -30,7 +30,6 @@ resource "archive_file" "developer_setup" {
       function_name    = var.function_name
       application_id   = oci_functions_application.function.id
       function_id      = var.enable_function_deployment ? oci_functions_function.function[0].id : ""
-      oci_profile      = var.developer_oci_profile
       repository_url   = oci_devops_repository.function.http_url
     })
   }
