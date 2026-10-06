@@ -3,7 +3,7 @@
 ## 1. Prepare the stack
 
 1. Review [PREREQUISITES.md](PREREQUISITES.md) and arrange the listed IAM policies before creating the stack.
-2. Package the root Terraform files, `schema.yaml`, `README.md`, and `developer-setup.sh.tftpl` as the Resource Manager configuration. Keep `build_spec.yaml` for the hosted source repository too. Do not include `.terraform` or state files.
+2. Use `dist/FunctionsSetup-RMStack.zip` as the Resource Manager configuration, or package the root Terraform files, `schema.yaml`, `developer-setup.sh.tftpl`, and `docs/DEVELOPER_README.md` with that relative path preserved. Keep `build_spec.yaml` for the hosted source repository too. Do not include `.terraform` or state files.
 3. Create a Resource Manager stack from the package. For the network and bucket, check **Select an existing** to reveal existing-resource inputs or leave the checkbox unchecked to define new resources. Enter the destination, setup ZIP link lifetime in days (30 by default), and function settings in the schema form. Terraform looks up the tenancy name and region key. Leave **Enable Function and deployment stage** off.
 4. Run a plan, review the resource names and IAM policy statements, then run the first apply. Record the `repository_url`, `build_pipeline_id`, `deploy_pipeline_id`, `container_image`, and sensitive `developer_setup_zip_url` outputs. The deployment pipeline exists now but has no stage yet.
 

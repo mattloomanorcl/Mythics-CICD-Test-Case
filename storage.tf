@@ -36,7 +36,7 @@ resource "archive_file" "developer_setup" {
 
   source {
     filename = "README.md"
-    content  = file("${path.module}/README.md")
+    content  = file("${path.module}/docs/DEVELOPER_README.md")
   }
 }
 
